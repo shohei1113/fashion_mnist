@@ -59,7 +59,6 @@ latent_view = Dense(10, activation='sigmoid')(encode_layer3)
 decode_layer1 = Dense(500, activation='relu')(latent_view)
 decode_layer2 = Dense(1000, activation='relu')(decode_layer1)
 decode_layer3 = Dense(1500, activation='relu')(decode_layer2)
-
 output_layer = Dense(784)(decode_layer3)
 
 model = Model(input_layer, output_layer)
@@ -76,19 +75,19 @@ sys.path.append('../../convnet-drawer')
 from keras.models import Sequential
 from convnet_drawer import Model, Conv2D, MaxPooling2D, Flatten, Dense
 
-model = Model(input_shape=(28, 28, 3))
+drawer_model = Model(input_shape=(28, 28, 3))
 
-model.add(Flatten())
-model.add(Dense(1500))
-model.add(Dense(1000))
-model.add(Dense(500))
-model.add(Dense(10))
-model.add(Dense(500))
-model.add(Dense(1000))
-model.add(Dense(1500))
-model.add(Dense(784))
+drawer_model.add(Flatten())
+drawer_model.add(Dense(1500))
+drawer_model.add(Dense(1000))
+drawer_model.add(Dense(500))
+drawer_model.add(Dense(10))
+drawer_model.add(Dense(500))
+drawer_model.add(Dense(1000))
+drawer_model.add(Dense(1500))
+drawer_model.add(Dense(784))
 
-model.save_fig('alexnet.svg')
+drawer_model.save_fig('alexnet.svg')
 
 # + {"colab_type": "text", "id": "mvFdHRtk2GGY", "cell_type": "markdown"}
 # ### モデルの概要を表示
@@ -103,16 +102,36 @@ model.summary()
 # + {"colab": {"base_uri": "https://localhost:8080/", "height": 731}, "colab_type": "code", "id": "Nv1BnA-39Z63", "outputId": "f9f6583b-e3ab-49da-f7e0-2a76d77488a5"}
 model.compile(optimizer='adam', loss='mse')
 early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')
-model.fit(train_x, train_x, epochs=20, batch_size=2048, validation_data=(val_x, val_x), callbacks=[early_stopping])
+history = model.fit(train_x, train_x, epochs=20, batch_size=2048, validation_data=(val_x, val_x), callbacks=[early_stopping])
+# -
 
-# + {"colab_type": "text", "id": "ypCG2E9V2p7x", "cell_type": "markdown"}
-# ### 学習モデルの可視化
+# ### 学習結果の可視化
 
-# + {"colab": {"base_uri": "https://localhost:8080/", "height": 860}, "colab_type": "code", "id": "xmAEO-Iy-Xyh", "outputId": "9570ae0d-2544-4a2e-91c3-eff22b480272"}
-from IPython.display import SVG
-from keras.utils.vis_utils import model_to_dot
+# +
+import matplotlib.pyplot as plt
+# %matplotlib inline
 
-SVG(model_to_dot(model).create(prog='dot', format='svg'))
+# Accuracy
+print(history.history)
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+#loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+# -
+
+preds = model.predict(val_x)
 
 # + {"colab_type": "text", "id": "_zLwSOGC3OO6", "cell_type": "markdown"}
 # ### 入力画像を表示
