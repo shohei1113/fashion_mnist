@@ -6,8 +6,8 @@
 #     text_representation:
 #       extension: .py
 #       format_name: light
-#       format_version: '1.3'
-#       jupytext_version: 1.0.5
+#       format_version: '1.4'
+#       jupytext_version: 1.1.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -26,26 +26,31 @@ from random import randint
 import pandas as pd
 import numpy as np
 
-# + {"colab_type": "text", "id": "KCbgwQaA0ZRv", "cell_type": "markdown"}
-# ### データセットの前処理
-# - データセットを読み込み、訓練データと予測用のデータに分割
-# - 正規化
-
 # + {"colab": {}, "colab_type": "code", "id": "nA9_qW1_9WOo"}
 train = pd.read_csv('./data/fashion-mnist_train.csv')
 train_x = train[list(train.columns)[1:]].values
 train_y = train['label'].values
+# -
 
+
+# ### データの確認
+
+train.head()
+
+# ### データセットの前処理
+# - データセットを読み込み、訓練データと予測用のデータに分割
+# - 正規化
+
+# +
 train_x = train_x / 255
 train_x, val_x, train_y, val_y = train_test_split(train_x, train_y, test_size=0.2)
 
 train_x = train_x.reshape(-1, 784)
 val_x = val_x.reshape(-1, 784)
 
-
 # + {"colab_type": "text", "id": "DOICGWUx1LQo", "cell_type": "markdown"}
 # ### オートエンコーダーのアーキテクチャを作成
-# - エンコードは2000, 1200, 500の3つの層で構成されている
+# - node数が2000, 12000, 500の3つの層で構成
 
 # + {"colab": {}, "colab_type": "code", "id": "OXSfU2iH9ZbZ"}
 input_layer = Input(shape=(784,))
@@ -69,7 +74,7 @@ model = Model(input_layer, output_layer)
 # +
 import sys
 
-sys.path.append('../../convnet-drawer')
+sys.path.append('../../python_lib/convnet-drawer')
 
 # +
 from keras.models import Sequential
@@ -102,7 +107,7 @@ model.summary()
 # + {"colab": {"base_uri": "https://localhost:8080/", "height": 731}, "colab_type": "code", "id": "Nv1BnA-39Z63", "outputId": "f9f6583b-e3ab-49da-f7e0-2a76d77488a5"}
 model.compile(optimizer='adam', loss='mse')
 early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')
-history = model.fit(train_x, train_x, epochs=20, batch_size=2048, validation_data=(val_x, val_x), callbacks=[early_stopping])
+history = model.fit(train_x, train_x, epochs=3, batch_size=2048, validation_data=(val_x, val_x), callbacks=[early_stopping])
 # -
 
 # ### 学習結果の可視化
@@ -110,16 +115,6 @@ history = model.fit(train_x, train_x, epochs=20, batch_size=2048, validation_dat
 # +
 import matplotlib.pyplot as plt
 # %matplotlib inline
-
-# Accuracy
-print(history.history)
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-plt.show()
 
 #loss
 plt.plot(history.history['loss'])
@@ -132,6 +127,7 @@ plt.show()
 # -
 
 preds = model.predict(val_x)
+preds
 
 # + {"colab_type": "text", "id": "_zLwSOGC3OO6", "cell_type": "markdown"}
 # ### 入力画像を表示
